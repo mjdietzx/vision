@@ -42,7 +42,7 @@ def make_grid(tensor, nrow=8, padding=2):
     return grid
 
 
-def save_image(tensor, filename, nrow=8, padding=2):
+def save_image(tensor, filename, nrow=8, padding=2, range=None):
     """
     Saves a given Tensor into an image file.
     If given a mini-batch tensor, will save the tensor as a grid of images.
@@ -50,6 +50,11 @@ def save_image(tensor, filename, nrow=8, padding=2):
     from PIL import Image
     tensor = tensor.cpu()
     grid = make_grid(tensor, nrow=nrow, padding=padding)
-    ndarr = grid.mul(255).byte().transpose(0,2).transpose(0,1).numpy()
+    if range is not None:
+        assert isinstance(tuple, range), "range has to be a tuple (min, max) if specified"
+        grid = torch.clamp(grid, min=range[0], max=range[1])
+        # make grid to be [0, 1]
+        grid.add_(-range[0]).div(range[1] - range[0])
+    ndarr = grid.mul(255).byte().transpose(0, 2).transpose(0, 1).numpy()
     im = Image.fromarray(ndarr)
     im.save(filename)
