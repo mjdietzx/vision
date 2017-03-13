@@ -70,10 +70,20 @@ class ImageFolder(data.Dataset):
             classes, class_to_idx = find_classes(root)
         else:
             class_to_idx = {classes[i]: i for i in range(len(classes))}
+
         imgs = make_dataset(root, class_to_idx)
+
         if len(imgs) == 0:
-            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
-                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+            print('Didn\'t find any class dirs in `root`. Trying to find class dirs in all sub dirs of root...')
+            imgs = []
+            for dir in os.listdir(root):
+                dir_path = os.path.join(root, dir)
+                if os.path.isdir(dir_path):
+                    imgs.extend(make_dataset(dir_path, class_to_idx))
+
+            if len(imgs) == 0:
+                raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+                                   "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
 
         self.root = root
         self.imgs = imgs
